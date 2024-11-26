@@ -32,7 +32,7 @@ const Navbar = () => {
           src="/avatar.png"
           alt=""
           width={36}
-          height={26}
+          height={36}
           className="rounded-full"
         />
       </div>
