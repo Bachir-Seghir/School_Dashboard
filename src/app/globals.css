@@ -27,3 +27,99 @@ body {
 .react-calendar__navigation__label__labelText {
   font-weight: 600 !important;
 }
+
+.rbc-btn-group:first-child {
+  display: none !important;
+}
+
+.rbc-btn-group:last-child {
+  font-size: 13px !important;
+}
+.rbc-btn-group:last-child button{
+  margin-left: 2px !important;
+  border: none !important;
+  background-color: #f1f0ff !important;
+}
+
+.rbc-toolbar-label {
+  text-align: right !important;
+  padding: 0 20px !important;
+}
+
+.rbc-toolbar button.rbc-active {
+  box-shadow: none !important;
+  background-color: #dbdafe !important;
+}
+
+.rbc-time-view {
+  border-color: #eee !important;
+}
+
+.rbc-time-header {
+  display: none !important;
+}
+
+.rbc-time-content {
+  border: none !important ;
+}
+
+.rbc-time-gutter.rbc-time-column {
+  font-size: 12px !important;
+}
+.rbc-time-gutter.rbc-time-column .rbc-timeslot-group {
+  padding: 0 20px !important;
+}
+.rbc-timeslot-group {
+  background-color: #f7fdff !important;
+  min-height: 50px !important;
+}
+
+.rbc-day-slot {
+  font-size: 14px !important;
+}
+
+.rbc-event {
+  display: flex !important;
+  flex-direction: column !important;
+  border: none !important;
+  color: black !important;
+  padding: 10px !important;
+  margin: 5px !important;
+  width: 99% !important;
+}
+
+.rbc-event-label {
+  color: gray !important;
+  margin: 5px !important;
+}
+.rbc-event:nth-child(1) {
+  background-color: #e2f8ff !important;
+}
+
+.rbc-event:nth-child(2) {
+  background-color: #fefce8 !important;
+}
+
+.rbc-event:nth-child(3) {
+  background-color: #f2f1ff !important;
+}
+
+.rbc-event:nth-child(4) {
+  background-color: #fdf2fb !important;
+}
+
+.rbc-event:nth-child(5) {
+  background-color: #e2f8ff !important;
+}
+
+.rbc-event:nth-child(6) {
+  background-color: #fefce8 !important;
+}
+
+.rbc-event:nth-child(7) {
+  background-color: #f2f1ff !important;
+}
+
+.rbc-event:nth-child(8) {
+  background-color: #fdf2fb !important;
+}
