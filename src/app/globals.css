@@ -79,18 +79,20 @@ body {
 }
 
 .rbc-event {
-  display: flex !important;
-  flex-direction: column !important;
+  height: auto !important;
   border: none !important;
   color: black !important;
-  padding: 10px !important;
-  margin: 5px !important;
   width: 99% !important;
+  top: 4px !important;
+  left: 4px !important;
 }
 
 .rbc-event-label {
   color: gray !important;
   margin: 5px !important;
+}
+.rbc-event-content {
+  font-size: 12px !important;
 }
 .rbc-event:nth-child(1) {
   background-color: #e2f8ff !important;
