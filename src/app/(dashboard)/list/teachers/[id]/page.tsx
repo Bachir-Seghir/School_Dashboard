@@ -19,7 +19,7 @@ const SingleTeacherPage = () => {
                 alt=""
                 width={144}
                 height={144}
-                className="w-36 h-36 object-cover rounded-full"
+                className="w-36 object-cover rounded-full"
               />
             </div>
             <div className="w-2/3 flex flex-col justify-between gap-4">
