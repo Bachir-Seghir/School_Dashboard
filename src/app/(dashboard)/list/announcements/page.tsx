@@ -1,3 +1,4 @@
+import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
@@ -42,15 +43,19 @@ const AnnouncementListPage = () => {
       <td className="hidden md:table-cell">{item.date}</td>
       <td>
         <div className="flex items-center gap-2">
-          <Link href={`/list/events/${item.id}`}>
-            <button className="h-7 w-7 rounded-full flex justify-center items-center bg-sky-200">
-              <Image src="/edit.png" alt="" width={16} height={16} />
-            </button>
-          </Link>
           {role === "admin" && (
-            <button className="h-7 w-7 rounded-full flex justify-center items-center bg-purple-200">
-              <Image src="/delete.png" alt="" width={16} height={16} />
-            </button>
+            //   <Link href={`/list/teachers/${item.id}`}>
+            //   <button className="h-7 w-7 rounded-full flex justify-center items-center bg-sky-200">
+            //     <Image src="/update.png" alt="" width={16} height={16} />
+            //   </button>
+            // </Link>
+            // <button className="h-7 w-7 rounded-full flex justify-center items-center bg-purple-200">
+            //   <Image src="/delete.png" alt="" width={16} height={16} />
+            // </button>
+            <>
+              <FormModal table="announcement" type="update" data={item} />
+              <FormModal table="announcement" type="delete" id={item.id} />
+            </>
           )}
         </div>
       </td>
@@ -74,9 +79,10 @@ const AnnouncementListPage = () => {
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
             {role === "admin" && (
-              <button className="w-8 h-8 rounded-full flex items-center justify-center bg-yellow-200">
-                <Image src="/plus.png" alt="" width={14} height={14} />
-              </button>
+              // <button className="w-8 h-8 rounded-full flex items-center justify-center bg-yellow-200">
+              //   <Image src="/plus.png" alt="" width={14} height={14} />
+              // </button>
+              <FormModal table="announcement" type="create" />
             )}
           </div>
         </div>

@@ -34,7 +34,7 @@ const Performance = () => {
         <h1 className="text-3xl font-bold">9.2</h1>
         <p className="text-xs text-gray-400">of 10 max B.Score</p>
       </div>
-      <h1 className="bottom-16 absolute font-semibold left-0 right-0 text-center">
+      <h1 className="bottom-16 absolute font-semibold left-0 right-0 m-auto text-center">
         1st Semester - 2nd Semester
       </h1>
     </div>
