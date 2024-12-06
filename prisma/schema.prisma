@@ -17,3 +17,93 @@ model Admin {
   id       String @id
   username String @unique
 }
+
+model Student {
+  id        String   @id
+  username  String   @unique
+  firstName String
+  lastName  String
+  email     String?
+  phone     String
+  address   String
+  img       String
+  bloodType String
+  sex       UserSex
+  createdAt DateTime @default(now())
+  parentId  String
+  parent    Parent   @relation(fields: [parentId], references: [id])
+}
+
+model Parent {
+  id        String    @id
+  username  String    @unique
+  firstName String
+  lastName  String
+  email     String?
+  phone     String
+  address   String
+  createdAt DateTime  @default(now())
+  students  Student[]
+}
+
+model Teacher {
+  id        String    @id
+  username  String    @unique
+  firstName String
+  lastName  String
+  email     String?
+  phone     String
+  address   String
+  img       String
+  bloodType String
+  sex       UserSex
+  createdAt DateTime  @default(now())
+  subjects  Subject[]
+}
+
+model Subject {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  teachers  Teacher[] @relation(fields: [teacherId], references: [id])
+  teacherId String
+}
+
+model Exam {
+  id       String @id
+  username String @unique
+}
+
+model Lesson {
+  id       String @id
+  username String @unique
+}
+
+model Class {
+  id       String @id
+  username String @unique
+}
+
+model Assignment {
+  id       String @id
+  username String @unique
+}
+
+model Announcement {
+  id       String @id
+  username String @unique
+}
+
+model Attendance {
+  id       String @id
+  username String @unique
+}
+
+model Result {
+  id       String @id
+  username String @unique
+}
+
+enum UserSex {
+  MALE
+  FEMALE
+}
