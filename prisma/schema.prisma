@@ -8,12 +8,12 @@ datasource db {
 }
 
 model Admin {
-  id       String @id
+  id       String @id @unique
   username String @unique
 }
 
 model Student {
-  id          String       @id
+  id          String       @id @unique
   username    String       @unique
   firstName   String
   lastName    String
@@ -23,6 +23,7 @@ model Student {
   img         String?
   bloodType   String
   sex         UserSex
+  birthday    DateTime
   createdAt   DateTime     @default(now())
   parentId    String
   parent      Parent       @relation(fields: [parentId], references: [id])
@@ -35,7 +36,7 @@ model Student {
 }
 
 model Parent {
-  id        String    @id
+  id        String    @id @unique
   username  String    @unique
   firstName String
   lastName  String
@@ -47,7 +48,7 @@ model Parent {
 }
 
 model Teacher {
-  id        String    @id
+  id        String    @id @unique
   username  String    @unique
   firstName String
   lastName  String
@@ -57,6 +58,7 @@ model Teacher {
   img       String?
   bloodType String
   sex       UserSex
+  birthday  DateTime
   createdAt DateTime  @default(now())
   subjects  Subject[]
   lessons   Lesson[]
@@ -89,10 +91,10 @@ model Exam {
 
 model Lesson {
   id          Int          @id @default(autoincrement())
-  username    String       @unique
+  name        String       @unique
   day         Day
-  startDay    DateTime
-  endDay      DateTime
+  startTime   DateTime
+  endTime     DateTime
   subjectId   Int
   subject     Subject      @relation(fields: [subjectId], references: [id])
   classId     Int
@@ -106,10 +108,11 @@ model Lesson {
 
 model Class {
   id            Int            @id @default(autoincrement())
-  username      String         @unique
+  name          String         @unique
+  capacity      Int
   lessons       Lesson[]
-  supervisorId  String
-  supervisor    Teacher        @relation(fields: [supervisorId], references: [id])
+  supervisorId  String?
+  supervisor    Teacher?       @relation(fields: [supervisorId], references: [id])
   students      Student[]
   gradeId       Int
   grade         Grade          @relation(fields: [gradeId], references: [id])
@@ -148,7 +151,7 @@ model Announcement {
 
 model Attendance {
   id        Int      @id @default(autoincrement())
-  Date      DateTime
+  date      DateTime
   present   Boolean
   lessonId  Int
   lesson    Lesson   @relation(fields: [lessonId], references: [id])
