@@ -108,7 +108,10 @@ const StudentListPage = async ({
           }
           break;
         case "search":
-          query.lastName = { contains: value, mode:"insensitive"}
+          query.lastName = { contains: value, mode: "insensitive" }
+          break;
+        default:
+          break;
       }
     }
   }
