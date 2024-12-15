@@ -76,7 +76,7 @@ const FormModal = ({
     | "announcement";
   type: "create" | "update" | "delete";
   data?: any;
-  id?: number;
+  id?: number | string;
 }) => {
   const size = type === "create" ? "h-8 w-8" : "h-7 w-7";
   const bgColor =
