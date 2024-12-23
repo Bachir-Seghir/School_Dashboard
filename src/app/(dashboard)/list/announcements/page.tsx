@@ -2,35 +2,31 @@ import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-import { announcementsData, role } from "@/lib/data";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
+import { auth } from "@clerk/nextjs/server";
 import { Announcement, Class, Prisma } from "@prisma/client";
 import Image from "next/image";
 
-const columns = [
-  {
-    header: "Title",
-    accessor: "title",
-  },
-  {
-    header: "Class",
-    accessor: "class",
-  },
-  {
-    header: "Date",
-    accessor: "date",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Actions",
-    accessor: "actions",
-  },
-];
+ 
 
 type AnnouncementList = Announcement & { class: Class }
 
-const renderRow = (item: AnnouncementList) => (
+ 
+
+const AnnouncementListPage = async ({
+  searchParams,
+}: {
+    searchParams: {
+    [key: string]: string | undefined
+  }
+  }) => {
+  
+  const { sessionClaims } = await auth()
+  const role = (sessionClaims?.metadata as { role?: string })?.role
+  
+ /////// Render Row Component ////////////
+  const renderRow = (item: AnnouncementList) => (
   <tr
     key={item.id}
     className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-purple-50"
@@ -41,14 +37,6 @@ const renderRow = (item: AnnouncementList) => (
     <td>
       <div className="flex items-center gap-2">
         {role === "admin" && (
-          //   <Link href={`/list/teachers/${item.id}`}>
-          //   <button className="h-7 w-7 rounded-full flex justify-center items-center bg-sky-200">
-          //     <Image src="/update.png" alt="" width={16} height={16} />
-          //   </button>
-          // </Link>
-          // <button className="h-7 w-7 rounded-full flex justify-center items-center bg-purple-200">
-          //   <Image src="/delete.png" alt="" width={16} height={16} />
-          // </button>
           <>
             <FormModal table="announcement" type="update" data={item} />
             <FormModal table="announcement" type="delete" id={item.id} />
@@ -57,15 +45,9 @@ const renderRow = (item: AnnouncementList) => (
       </div>
     </td>
   </tr>
-);
-const AnnouncementListPage = async ({
-  searchParams,
-}: {
-    searchParams: {
-    [key: string]: string | undefined
-  }
-}) => {
+  );
 
+  
   const { page, ...queryParams } = searchParams;
   const p = page ? parseInt(page) : 1;
 
@@ -93,6 +75,26 @@ const AnnouncementListPage = async ({
     }),
      prisma.announcement.count({ where: query})
   ])
+const columns = [
+  {
+    header: "Title",
+    accessor: "title",
+  },
+  {
+    header: "Class",
+    accessor: "class",
+  },
+  {
+    header: "Date",
+    accessor: "date",
+    className: "hidden md:table-cell",
+  },
+  ...(role === "admin" ? [{
+    header: "Actions",
+    accessor: "actions",
+  }] : []),
+];
+ 
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
       {/* TOP */}
@@ -124,6 +126,8 @@ const AnnouncementListPage = async ({
       <Pagination page={p} count={count} />
     </div>
   );
+
+  
 };
 
 export default AnnouncementListPage;
