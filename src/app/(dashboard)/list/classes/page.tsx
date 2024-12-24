@@ -2,41 +2,28 @@ import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-import { role } from "@/lib/data";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
+import { auth } from "@clerk/nextjs/server";
 import { Class, Prisma, Teacher } from "@prisma/client";
 import Image from "next/image";
 
 
 type ClassList = Class & { supervisor: Teacher }
 
-const columns = [
-  {
-    header: "Class Name",
-    accessor: "name",
-  },
-  {
-    header: "Capacity",
-    accessor: "capacity",
-  },
-  {
-    header: "Grade",
-    accessor: "grade",
-  },
-  {
-    header: "Supervisor",
-    accessor: "supervisor",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Actions",
-    accessor: "actions",
-  },
-];
 
-
-const renderRow = (item: ClassList) => (
+const ClassListPage = async ({
+  searchParams,
+}: {
+    searchParams: {
+    [key: string]: string | undefined
+  }
+  }) => {
+  
+  const { sessionClaims } = await auth()
+  const role = (sessionClaims?.metadata as { role?: string })?.role
+  
+  const renderRow = (item: ClassList) => (
   <tr
     key={item.id}
     className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-purple-50"
@@ -48,14 +35,6 @@ const renderRow = (item: ClassList) => (
     <td>
       <div className="flex items-center gap-2">
         {role === "admin" && (
-          //   <Link href={`/list/teachers/${item.id}`}>
-          //   <button className="h-7 w-7 rounded-full flex justify-center items-center bg-sky-200">
-          //     <Image src="/update.png" alt="" width={16} height={16} />
-          //   </button>
-          // </Link>
-          // <button className="h-7 w-7 rounded-full flex justify-center items-center bg-purple-200">
-          //   <Image src="/delete.png" alt="" width={16} height={16} />
-          // </button>
           <>
             <FormModal table="class" type="update" data={item} />
             <FormModal table="class" type="delete" id={item.id} />
@@ -64,15 +43,8 @@ const renderRow = (item: ClassList) => (
       </div>
     </td>
   </tr>
-);
-const ClassListPage = async ({
-  searchParams,
-}: {
-    searchParams: {
-    [key: string]: string | undefined
-  }
-}) => {
-
+  );
+  
   const { page, ...queryParams } = searchParams;
   const p = page ? parseInt(page) : 1;
 
@@ -105,6 +77,31 @@ const ClassListPage = async ({
      prisma.class.count({ where: query})
   ])
 
+
+  const columns = [
+  {
+    header: "Class Name",
+    accessor: "name",
+  },
+  {
+    header: "Capacity",
+    accessor: "capacity",
+  },
+  {
+    header: "Grade",
+    accessor: "grade",
+  },
+  {
+    header: "Supervisor",
+    accessor: "supervisor",
+    className: "hidden md:table-cell",
+  },
+  ...(role === "admin" ? [{
+    header: "Actions",
+    accessor: "actions",
+  }] : []),
+  ];
+
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
       {/* TOP */}
@@ -120,9 +117,6 @@ const ClassListPage = async ({
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
             {role === "admin" && (
-              // <button className="w-8 h-8 rounded-full flex items-center justify-center bg-yellow-200">
-              //   <Image src="/plus.png" alt="" width={14} height={14} />
-              // </button>
               <FormModal table="class" type="create" />
             )}
           </div>
