@@ -68,6 +68,7 @@ const AssignmentListPage = async ({
   const query: Prisma.AssignmentWhereInput = {}
   query.lesson = {}
   
+  if(queryParams) {
   for (const [key, value] of Object.entries(queryParams)) {
     if (value !== undefined) {
       switch (key) {
@@ -90,7 +91,7 @@ const AssignmentListPage = async ({
       }
     }
   }
-
+}
   // ROLE conditions // 
 
   switch (role) {

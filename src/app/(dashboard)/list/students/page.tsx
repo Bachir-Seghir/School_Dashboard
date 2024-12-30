@@ -5,44 +5,30 @@ import TableSearch from "@/components/TableSearch";
 import { role, studentsData } from "@/lib/data";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
+import { auth } from "@clerk/nextjs/server";
 import { Class, Prisma, Student } from "@prisma/client";
 import Image from "next/image";
 import Link from "next/link";
 
-const columns = [
-  {
-    header: "Info",
-    accessor: "info",
-  },
-  {
-    header: "Student ID",
-    accessor: "studentId",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Grade",
-    accessor: "grade",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Phone",
-    accessor: "phone",
-    className: "hidden lg:table-cell",
-  },
-  {
-    header: "Address",
-    accessor: "address",
-    className: "hidden lg:table-cell",
-  },
-  {
-    header: "Actions",
-    accessor: "actions",
-  },
-];
+
 
 type StudentList = Student & { class: Class} 
 
-const renderRow = (item: StudentList) => (
+
+
+const StudentListPage = async ({
+  searchParams,
+}: {
+    searchParams: {
+    [key: string]: string | undefined
+  }
+}) => {
+
+  const { sessionClaims } = await auth()
+  const role = (sessionClaims?.metadata as { role?: string })?.role
+  
+    /////// Render Row Component ////////////
+  const renderRow = (item: StudentList) => (
   <tr
     key={item.id}
     className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-purple-50"
@@ -72,29 +58,20 @@ const renderRow = (item: StudentList) => (
           </button>
         </Link>
         {role === "admin" && (
-          // <button className="h-7 w-7 rounded-full flex justify-center items-center bg-purple-200">
-          //   <Image src="/delete.png" alt="" width={16} height={16} />
-          // </button>
           <FormModal table="student" type="delete" id={item.id} />
         )}
       </div>
     </td>
   </tr>
-);
-
-const StudentListPage = async ({
-  searchParams,
-}: {
-    searchParams: {
-    [key: string]: string | undefined
-  }
-}) => {
-
+  );
+  
   const { page, ...queryParams } = searchParams;
   const p = page ? parseInt(page) : 1;
 
   const query: Prisma.StudentWhereInput = {}
   
+  // URL Params Conditions //
+  if(queryParams) { 
   for (const [key, value] of Object.entries(queryParams)) {
     if (value !== undefined) {
       switch (key) {
@@ -115,7 +92,7 @@ const StudentListPage = async ({
       }
     }
   }
-
+}
   const [data, count] = await prisma.$transaction([
     prisma.student.findMany({
        where: query,
@@ -127,6 +104,38 @@ const StudentListPage = async ({
     }),
      prisma.student.count({ where: query})
   ])
+
+  const columns = [
+  {
+    header: "Info",
+    accessor: "info",
+  },
+  {
+    header: "Student ID",
+    accessor: "studentId",
+    className: "hidden md:table-cell",
+  },
+  {
+    header: "Grade",
+    accessor: "grade",
+    className: "hidden md:table-cell",
+  },
+  {
+    header: "Phone",
+    accessor: "phone",
+    className: "hidden lg:table-cell",
+  },
+  {
+    header: "Address",
+    accessor: "address",
+    className: "hidden lg:table-cell",
+  },
+  ...( role === "admin" ? [{
+    header: "Actions",
+    accessor: "actions",
+  }] : []),
+  ];
+  
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
       {/* TOP */}
@@ -142,9 +151,6 @@ const StudentListPage = async ({
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
             {role === "admin" && (
-              //   <button className="w-8 h-8 rounded-full flex items-center justify-center bg-yellow-200">
-              //   <Image src="/plus.png" alt="" width={14} height={14} />
-              // </button>
               <FormModal table="student" type="create" />
             )}
           </div>

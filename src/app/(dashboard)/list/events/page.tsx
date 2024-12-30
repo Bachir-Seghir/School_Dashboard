@@ -62,6 +62,7 @@ const SubjectListPage = async ({
   // URL Params Conditions //
   const query: Prisma.EventWhereInput = {}
   
+  if(queryParams){
   for (const [key, value] of Object.entries(queryParams)) {
     if (value !== undefined) {
       switch (key) {
@@ -72,6 +73,7 @@ const SubjectListPage = async ({
           break;
       }
     }
+  }
   }
   // ROLE conditions // 
 

@@ -50,6 +50,7 @@ const ClassListPage = async ({
 
   const query: Prisma.ClassWhereInput = {}
   
+  if(queryParams) {
   for (const [key, value] of Object.entries(queryParams)) {
     if (value !== undefined) {
       switch (key) {
@@ -64,7 +65,7 @@ const ClassListPage = async ({
       }
     }
   }
-
+}
   const [data, count] = await prisma.$transaction([
     prisma.class.findMany({
        where: query,

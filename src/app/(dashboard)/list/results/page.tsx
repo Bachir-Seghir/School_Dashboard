@@ -2,47 +2,13 @@ import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
-import { resultsData, role } from "@/lib/data";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
-import { Prisma, Result } from "@prisma/client";
+import { auth } from "@clerk/nextjs/server";
+import { Prisma } from "@prisma/client";
 import Image from "next/image";
-import Link from "next/link";
 
-const columns = [
-  {
-    header: "Title",
-    accessor: "title",
-  },
-  {
-    header: "Student",
-    accessor: "studentId",
-  },
-  {
-    header: "Score",
-    accessor: "score",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Teacher",
-    accessor: "teacher",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Class",
-    accessor: "class",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Date",
-    accessor: "date",
-    className: "hidden md:table-cell",
-  },
-  {
-    header: "Actions",
-    accessor: "actions",
-  },
-];
+
 
 type ResultList = {
   id: number;
@@ -56,7 +22,20 @@ type ResultList = {
   startTime: Date;
 }
 
-const renderRow = (item: ResultList) => (
+
+const ResultListPage = async ({
+  searchParams,
+}: {
+    searchParams: {
+    [key: string]: string | undefined
+  }
+}) => {
+
+  const { userId: currentUserId, sessionClaims } = await auth()
+  const role = (sessionClaims?.metadata as { role?: string })?.role
+  
+    /////// Render Row Component ////////////
+  const renderRow = (item: ResultList) => (
   <tr
     key={item.id}
     className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-purple-50"
@@ -69,15 +48,7 @@ const renderRow = (item: ResultList) => (
     <td className="hidden md:table-cell">{new Intl.DateTimeFormat("en-US").format(item.startTime)}</td>
     <td>
       <div className="flex items-center gap-2">
-        {role === "admin" && (
-          //   <Link href={`/list/teachers/${item.id}`}>
-          //   <button className="h-7 w-7 rounded-full flex justify-center items-center bg-sky-200">
-          //     <Image src="/update.png" alt="" width={16} height={16} />
-          //   </button>
-          // </Link>
-          // <button className="h-7 w-7 rounded-full flex justify-center items-center bg-purple-200">
-          //   <Image src="/delete.png" alt="" width={16} height={16} />
-          // </button>
+        {role === "admin" || role === "teacher" && (
           <>
             <FormModal table="result" type="update" data={item} />
             <FormModal table="result" type="delete" id={item.id} />
@@ -86,20 +57,15 @@ const renderRow = (item: ResultList) => (
       </div>
     </td>
   </tr>
-);
-const ResultListPage = async ({
-  searchParams,
-}: {
-    searchParams: {
-    [key: string]: string | undefined
-  }
-}) => {
-
+  );
+  
   const { page, ...queryParams } = searchParams;
   const p = page ? parseInt(page) : 1;
 
   const query: Prisma.ResultWhereInput = {}
   
+  // URL Params Conditions //
+  if (queryParams) {
   for (const [key, value] of Object.entries(queryParams)) {
     if (value !== undefined) {
       switch (key) {
@@ -124,6 +90,30 @@ const ResultListPage = async ({
       }
     }
   }
+  }
+  
+  // ROLE conditions // 
+
+  switch (role) {
+    case "admin":
+      break;
+    case "teacher":
+      query.OR = [
+        { exam: { lesson: { teacherId: currentUserId! } } },
+        { assignment: { lesson: { teacherId: currentUserId! }}}
+      ]
+      break;
+    case "student":
+      query.studentId = currentUserId!
+      break;
+    case "parent":
+      query.student = {
+        parentId: currentUserId!
+      }
+    default:
+      break;
+  }
+
   const [dataRes, count] = await prisma.$transaction([
     prisma.result.findMany({
        where: query,
@@ -174,6 +164,42 @@ const ResultListPage = async ({
       startTime: isExam ? assessment.startTime : assessment.startDate,
     }
   })
+
+  const columns = [
+  {
+    header: "Title",
+    accessor: "title",
+  },
+  {
+    header: "Student",
+    accessor: "studentId",
+  },
+  {
+    header: "Score",
+    accessor: "score",
+    className: "hidden md:table-cell",
+  },
+  {
+    header: "Teacher",
+    accessor: "teacher",
+    className: "hidden md:table-cell",
+  },
+  {
+    header: "Class",
+    accessor: "class",
+    className: "hidden md:table-cell",
+  },
+  {
+    header: "Date",
+    accessor: "date",
+    className: "hidden md:table-cell",
+  },
+  ...( role === "admin" || role === "teacher" ? [{
+    header: "Actions",
+    accessor: "actions",
+  }] : []),
+  ];
+  
   return (
     <div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
       {/* TOP */}
@@ -188,7 +214,7 @@ const ResultListPage = async ({
             <button className="w-8 h-8 rounded-full flex items-center justify-center bg-yellow-200">
               <Image src="/sort.png" alt="" width={14} height={14} />
             </button>
-            {role === "admin" && (
+            {role === "admin" || role === "teacher" && (
               // <button className="w-8 h-8 rounded-full flex items-center justify-center bg-yellow-200">
               //   <Image src="/plus.png" alt="" width={14} height={14} />
               // </button>
