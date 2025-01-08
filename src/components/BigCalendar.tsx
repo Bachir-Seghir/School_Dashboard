@@ -6,7 +6,6 @@ import moment from "moment";
 import "react-big-calendar/lib/css/react-big-calendar.css";
 
 import { useState } from "react";
-import { log } from "console";
 
 const localizer = momentLocalizer(moment);
 

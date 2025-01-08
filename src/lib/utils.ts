@@ -1,3 +1,5 @@
+import { auth } from "@clerk/nextjs/server"
+
 const currentWorkWeek = () => {
     const today = new Date()
     const dayOfWeek = today.getDay()
@@ -49,3 +51,14 @@ export const adjustScheduleCurrWeek = (lessons: { title: string; start: Date; en
     })
 }
 
+
+
+export const getUserData = async (): Promise<{ role: string | undefined, currentUserId: string | null }> => {
+    const { userId: currentUserId, sessionClaims } = await auth()
+    const role = (sessionClaims?.metadata as { role?: string })?.role
+
+    return {
+        role,
+        currentUserId
+    }
+}
