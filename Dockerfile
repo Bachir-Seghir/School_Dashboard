@@ -42,5 +42,5 @@ EXPOSE 3000
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# Command to start the app
-CMD ["npm", "start"]
+# Command to run migrations and seed, then start the app
+CMD ["sh", "-c", "npx prisma migrate deploy && npx prisma db seed && npm start"]
