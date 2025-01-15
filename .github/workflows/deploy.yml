@@ -32,11 +32,11 @@ jobs:
           port: 22
           run: |
             # Stop and remove any old container (if it exists)
-            docker stop nextjs-app || true
-            docker rm nextjs-app || true
+            docker stop school-app || true
+            docker rm school-app || true
 
             # Pull the latest image (in case you use Docker Hub in future) or build directly on VPS
             # docker pull school-app:v1.0.0 || true  # Uncomment if you are using a registry
 
             # Run the container with the built image
-            docker run -d --name nextjs-app -p 80:3000 school-app:v1.0.0
+            docker run -d --name school-app -p 80:3000 school-app:v1.0.0
