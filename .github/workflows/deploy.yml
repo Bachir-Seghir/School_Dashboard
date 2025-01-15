@@ -1,0 +1,43 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main # Trigger only on pushes to the main branch
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the repository
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      # Step 3: Build the application
+      - name: Install dependencies and build
+        run: |
+          npm ci
+          npm run build
+
+      # Step 4: Build Docker image
+      - name: Build Docker image
+        run: docker build -t school-app:v1.0 .
+
+      # Step 5: Deploy to VPS
+      - name: Deploy to VPS
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          echo "$SSH_PRIVATE_KEY" > private_key.pem
+          chmod 600 private_key.pem
+          scp -i private_key.pem -o StrictHostKeyChecking=no docker-compose.yml $VPS_USER@$VPS_HOST:/home/$VPS_USER/
+          ssh -i private_key.pem -o StrictHostKeyChecking=no $VPS_USER@$VPS_HOST "docker-compose up -d --build"
