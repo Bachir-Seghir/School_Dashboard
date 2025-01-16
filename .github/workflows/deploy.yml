@@ -14,15 +14,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Step 2: Set up Docker Buildx (optional, useful for cross-platform builds, you can skip if not needed)
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+      # Step 2: Log in to Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
       # Step 3: Build Docker image
       - name: Build Docker image
-        run: docker build -t school-app:v1.0.0 .
+        run: docker build -t ${{ secrets.DOCKER_USERNAME }}/school-app:v1.0.0 .
 
-      # Step 4: SSH into VPS and deploy the app
+      # Step 4: Push Docker image to registry
+      - name: Push Docker image
+        run: docker push ${{ secrets.DOCKER_USERNAME }}/school-app:v1.0.0
+
+      # Step 5: SSH into VPS and deploy the app
       - name: SSH into VPS and deploy
         uses: appleboy/ssh-action@v0.1.6
         with:
@@ -32,12 +39,15 @@ jobs:
           passphrase: ${{ secrets.SSH_KEY_PASSPHRASE }}
           port: 22
           run: |
-            # Stop and remove any old container (if it exists)
+            # Ensure Docker is running
+            sudo systemctl start docker || true
+
+            # Stop and remove any old container
             docker stop school-app || true
             docker rm school-app || true
 
-            # Pull the latest image (in case you use Docker Hub in future) or build directly on VPS
-            # docker pull school-app:v1.0.0 || true  # Uncomment if you are using a registry
+            # Pull the latest image from Docker Hub
+            docker pull ${{ secrets.DOCKER_USERNAME }}/school-app:v1.0.0
 
-            # Run the container with the built image
-            docker run -d --name school-app -p 80:3000 school-app:v1.0.0
+            # Run the container on port 8080 (to avoid conflict with Nginx on port 80)
+            docker run -d --name school-app -p 8080:3000 ${{ secrets.DOCKER_USERNAME }}/school-app:v1.0.0
