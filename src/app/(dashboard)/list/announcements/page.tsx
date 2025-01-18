@@ -66,8 +66,8 @@ const AnnouncementListPage = async ({
   }
 }) => {
 
-  const { page, ...queryParams } = searchParams;
-  const p = page ? parseInt(page) : 1;
+  const { page: rawPage, ...queryParams } = searchParams;
+  const page = rawPage ? parseInt(rawPage) : 1;
 
   const query: Prisma.AnnouncementWhereInput = {}
   
