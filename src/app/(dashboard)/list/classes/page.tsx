@@ -1,14 +1,14 @@
-import FormModal from "@/components/FormModal";
+import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
 import prisma from "@/lib/prisma";
 import { ITEM_PER_PAGE } from "@/lib/settings";
 import { getUserData } from "@/lib/utils";
-import { Class, Prisma, Teacher } from "@prisma/client";
+import { Class, Grade, Prisma, Teacher } from "@prisma/client";
 import Image from "next/image";
 
-type ClassList = Class & { supervisor: Teacher };
+type ClassList = Class & { supervisor: Teacher; grade: Grade };
 
 // retreive the userId and role
 const { role } = await getUserData();
@@ -48,7 +48,7 @@ const renderRow = (item: ClassList) => (
 	>
 		<td className="flex items-center gap-4 p-4">{item.name}</td>
 		<td className="hidden md:table-cell">{item.capacity}</td>
-		<td className="hidden md:table-cell">{item.name[0]}</td>
+		<td className="hidden md:table-cell">{item.grade.level}</td>
 		<td className="hidden md:table-cell">
 			{item.supervisor.firstName + " " + item.supervisor.lastName}
 		</td>
@@ -56,12 +56,12 @@ const renderRow = (item: ClassList) => (
 			<div className="flex items-center gap-2">
 				{role === "admin" && (
 					<>
-						<FormModal
+						<FormContainer
 							table="class"
 							type="update"
 							data={item}
 						/>
-						<FormModal
+						<FormContainer
 							table="class"
 							type="delete"
 							id={item.id}
@@ -105,7 +105,12 @@ const ClassListPage = async ({
 		prisma.class.findMany({
 			where: query,
 			include: {
-				supervisor: true,
+				supervisor: {
+					select: { firstName: true, lastName: true },
+				},
+				grade: {
+					select: { level: true },
+				},
 			},
 			take: ITEM_PER_PAGE,
 			skip: ITEM_PER_PAGE * (p - 1),
@@ -138,7 +143,7 @@ const ClassListPage = async ({
 							/>
 						</button>
 						{role === "admin" && (
-							<FormModal
+							<FormContainer
 								table="class"
 								type="create"
 							/>
