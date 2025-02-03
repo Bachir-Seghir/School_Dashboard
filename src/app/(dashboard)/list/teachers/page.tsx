@@ -1,4 +1,4 @@
-import FormModal from "@/components/FormModal";
+import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
@@ -95,7 +95,7 @@ const renderRow = (item: TeacherList) => (
 					</button>
 				</Link>
 				{role === "admin" && (
-					<FormModal
+					<FormContainer
 						table="teacher"
 						type="delete"
 						id={item.id}
@@ -149,7 +149,6 @@ const TeacherListPage = async ({
 		}),
 		prisma.teacher.count({ where: query }),
 	]);
-
 	return (
 		<div className="flex-1 p-4 m-4 mt-0 bg-white rounded-md">
 			{/* TOP */}
@@ -175,7 +174,7 @@ const TeacherListPage = async ({
 							/>
 						</button>
 						{role === "admin" && (
-							<FormModal
+							<FormContainer
 								table="teacher"
 								type="create"
 							/>
