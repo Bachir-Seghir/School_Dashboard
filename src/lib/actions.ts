@@ -1,6 +1,6 @@
 "use server"
 
-import { ClassSchema, SubjectSchema, TeacherSchema } from "./formValidationSchemas";
+import { ClassSchema, StudentSchema, SubjectSchema, TeacherSchema } from "./formValidationSchemas";
 import prisma from "./prisma";
 import { clerkClient } from "@clerk/nextjs/server";
 
@@ -245,4 +245,32 @@ export const deleteTeacher = async (currentState: CurrentState, data: FormData) 
         return { success: false, error: true }
     }
 
+}
+
+
+// Student Actions
+
+export const createStudent = async (currentState: CurrentState, data: StudentSchema) => {
+
+    try {
+        const classItem = await prisma.class.findUnique({
+            where: { id: data.classId },
+            include: {
+                _count: {
+                    select: {
+                        students: true
+                    }
+                }
+            }
+        })
+
+        if (classItem?.capacity === classItem?._count.students) {
+            return { success: false, error: true }
+        }
+        return { success: true, error: false }
+
+    } catch (error) {
+        console.log(error);
+        return { success: false, error: true }
+    }
 }
