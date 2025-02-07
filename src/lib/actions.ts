@@ -356,25 +356,9 @@ export const deleteStudent = async (currentState: CurrentState, data: FormData) 
         const client = await clerkClient()
         await client.users.deleteUser(id)
 
-        // Delete related assignments, attendances, and exams linked to lessons of this teacher
-        // await prisma.$transaction(async (prisma) => {
-        //     await prisma.assignment.deleteMany({
-        //         where: { lesson: { teacherId: id } }
-        //     });
-        //     await prisma.attendance.deleteMany({
-        //         where: { lesson: { teacherId: id } }
-        //     });
-        //     await prisma.exam.deleteMany({
-        //         where: { lesson: { teacherId: id } }
-        //     });
+        // TODO : Delete related attendances, and results linked to this student
 
-        //     // delete lesson associated with this teacher 
-        //     await prisma.lesson.deleteMany({
-        //         where: { teacherId: id }
-        //     })
-        // })
-
-        // delete the teacher
+        // delete the student
         await prisma.student.delete({
             where: { id }
         })

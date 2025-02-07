@@ -1,6 +1,11 @@
 "use client";
 
-import { deleteClass, deleteSubject, deleteTeacher } from "@/lib/actions";
+import {
+	deleteClass,
+	deleteStudent,
+	deleteSubject,
+	deleteTeacher,
+} from "@/lib/actions";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -13,7 +18,7 @@ const deleteActionMap = {
 	subject: deleteSubject,
 	class: deleteClass,
 	teacher: deleteTeacher,
-	student: deleteSubject,
+	student: deleteStudent,
 	parent: deleteSubject,
 	lesson: deleteSubject,
 	exam: deleteSubject,
@@ -75,13 +80,14 @@ const forms: {
 			relatedData={relatedData}
 		/>
 	),
-	// student: (setOpen, type, data) => (
-	// 	<StudentForm
-	// 		setOpen={setOpen}
-	// 		type={type}
-	// 		data={data}
-	// 	/>
-	// ),
+	student: (setOpen, type, data, relatedData) => (
+		<StudentForm
+			setOpen={setOpen}
+			type={type}
+			data={data}
+			relatedData={relatedData}
+		/>
+	),
 	// announcement: (setOpen, type, data) => (
 	// 	<AnnouncementForm
 	// 		setOpen={setOpen}
@@ -180,7 +186,7 @@ const FormModal = ({
 				setOpen(false);
 				router.refresh();
 			}
-		}, [state]);
+		}, [state, router]);
 		return type === "delete" && id ? (
 			<form
 				action={formAction}

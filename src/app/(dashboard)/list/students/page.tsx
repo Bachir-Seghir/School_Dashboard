@@ -1,3 +1,4 @@
+import FormContainer from "@/components/FormContainer";
 import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
@@ -85,7 +86,7 @@ const renderRow = (item: StudentList) => (
 					</button>
 				</Link>
 				{role === "admin" && (
-					<FormModal
+					<FormContainer
 						table="student"
 						type="delete"
 						id={item.id}
@@ -168,7 +169,7 @@ const StudentListPage = async ({
 							/>
 						</button>
 						{role === "admin" && (
-							<FormModal
+							<FormContainer
 								table="student"
 								type="create"
 							/>
