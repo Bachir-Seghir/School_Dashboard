@@ -13,6 +13,7 @@ services:
       - postgres_data:/var/lib/postgres/data
     
   app:
+    build: .
     container_name: nextjs_app
     restart: always
     ports:
