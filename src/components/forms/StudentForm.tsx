@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import InputField from "../InputField";
 import Image from "next/image";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { studentSchema, StudentSchema } from "@/lib/formValidationSchemas";
+import { studentSchema, StudentSchema } from "@/lib/schemas";
 import { createStudent, updateStudent } from "@/lib/actions";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
