@@ -1,4 +1,4 @@
-import FormModal from "@/components/FormModal";
+import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
@@ -16,74 +16,6 @@ type AssignmentList = Assignment & {
 	};
 };
 
-// retreive the userId and role
-const { currentUserId, role } = await getUserData();
-
-const columns = [
-	{
-		header: "Subject",
-		accessor: "name",
-	},
-	{
-		header: "Class",
-		accessor: "class",
-	},
-	{
-		header: "Teacher",
-		accessor: "teacher",
-		className: "hidden md:table-cell",
-	},
-	{
-		header: "Due Date",
-		accessor: "Duedate",
-		className: "hidden md:table-cell",
-	},
-	...(role === "admin" || role === "teacher"
-		? [
-				{
-					header: "Actions",
-					accessor: "actions",
-				},
-		  ]
-		: []),
-];
-
-/////// Render Row Component ////////////
-const renderRow = (item: AssignmentList) => (
-	<tr
-		key={item.id}
-		className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-purple-50"
-	>
-		<td className="flex items-center gap-4 p-4 font-semibold">
-			{item.lesson.subject.name}
-		</td>
-		<td>{item.lesson.class.name}</td>
-		<td className="hidden md:table-cell">{item.lesson.teacher.lastName}</td>
-		<td className="hidden md:table-cell">
-			{new Intl.DateTimeFormat("en-US").format(item.dueDate)}
-		</td>
-		<td>
-			<div className="flex items-center gap-2">
-				{role === "admin" ||
-					(role === "teacher" && (
-						<>
-							<FormModal
-								table="assignment"
-								type="update"
-								data={item}
-							/>
-							<FormModal
-								table="assignment"
-								type="delete"
-								id={item.id}
-							/>
-						</>
-					))}
-			</div>
-		</td>
-	</tr>
-);
-
 const AssignmentListPage = async ({
 	searchParams,
 }: {
@@ -91,8 +23,77 @@ const AssignmentListPage = async ({
 		[key: string]: string | undefined;
 	};
 }) => {
-	const { page, ...queryParams } = searchParams;
-	const p = page ? parseInt(page) : 1;
+	// retreive the userId and role
+	const { currentUserId, role } = await getUserData();
+
+	const columns = [
+		{
+			header: "Subject",
+			accessor: "name",
+		},
+		{
+			header: "Class",
+			accessor: "class",
+		},
+		{
+			header: "Teacher",
+			accessor: "teacher",
+			className: "hidden md:table-cell",
+		},
+		{
+			header: "Due Date",
+			accessor: "Duedate",
+			className: "hidden md:table-cell",
+		},
+		...(role === "admin" || "teacher"
+			? [
+					{
+						header: "Actions",
+						accessor: "actions",
+					},
+			  ]
+			: []),
+	];
+
+	/////// Render Row Component ////////////
+	const renderRow = (item: AssignmentList) => (
+		<tr
+			key={item.id}
+			className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-purple-50"
+		>
+			<td className="flex items-center gap-4 p-4 font-semibold">
+				{item.lesson.subject.name}
+			</td>
+			<td>{item.lesson.class.name}</td>
+			<td className="hidden md:table-cell">{item.lesson.teacher.lastName}</td>
+			<td className="hidden md:table-cell">
+				{new Intl.DateTimeFormat("en-US").format(item.dueDate)}
+			</td>
+			<td>
+				<div className="flex items-center gap-2">
+					{(role === "admin" || "teacher") && (
+						<>
+							<FormContainer
+								table="assignment"
+								type="update"
+								data={item}
+							/>
+							<FormContainer
+								table="assignment"
+								type="delete"
+								id={item.id}
+							/>
+						</>
+					)}
+				</div>
+			</td>
+		</tr>
+	);
+
+	// extract query parameters
+	const { page: rawPage, ...queryParams } = searchParams;
+	const parsedPage = rawPage ? parseInt(rawPage as string) : NaN;
+	const page = Number.isNaN(parsedPage) || parsedPage < 1 ? 1 : parsedPage;
 
 	// URL Params Conditions //
 	const query: Prisma.AssignmentWhereInput = {};
@@ -122,35 +123,21 @@ const AssignmentListPage = async ({
 			}
 		}
 	}
-	// ROLE conditions //
 
-	switch (role) {
-		case "admin":
-			break;
-		case "teacher":
-			query.lesson.teacherId = currentUserId!;
-			break;
-		case "student":
-			query.lesson.class = {
-				students: {
-					some: {
-						id: currentUserId!,
-					},
-				},
-			};
-			break;
-		case "parent":
-			query.lesson.class = {
-				students: {
-					some: {
-						parentId: currentUserId!,
-					},
-				},
-			};
-			break;
-		default:
-			break;
+	// ROLE conditions //
+	const roleConditions = {
+		admin: {},
+		teacher: { teacherId: currentUserId },
+		student: { class: { students: { some: { id: currentUserId } } } },
+		parent: { class: { students: { some: { parentId: currentUserId } } } },
+	};
+
+	const roleCondition =
+		roleConditions[role as keyof typeof roleConditions] || {};
+	if (role !== "admin") {
+		query.lesson = { ...query.lesson, ...roleCondition };
 	}
+
 	const [data, count] = await prisma.$transaction([
 		prisma.assignment.findMany({
 			where: query,
@@ -164,7 +151,7 @@ const AssignmentListPage = async ({
 				},
 			},
 			take: ITEM_PER_PAGE,
-			skip: ITEM_PER_PAGE * (p - 1),
+			skip: ITEM_PER_PAGE * (page - 1),
 		}),
 		prisma.assignment.count({ where: query }),
 	]);
@@ -195,13 +182,12 @@ const AssignmentListPage = async ({
 								height={14}
 							/>
 						</button>
-						{role === "admin" ||
-							(role === "teacher" && (
-								<FormModal
-									table="assignment"
-									type="create"
-								/>
-							))}
+						{(role === "admin" || "teacher") && (
+							<FormContainer
+								table="assignment"
+								type="create"
+							/>
+						)}
 					</div>
 				</div>
 			</div>
@@ -213,7 +199,7 @@ const AssignmentListPage = async ({
 			/>
 			{/* Pagination */}
 			<Pagination
-				page={p}
+				page={page}
 				count={count}
 			/>
 		</div>

@@ -9,6 +9,7 @@ import { toast } from "react-toastify";
 
 import {
 	deleteAnnouncement,
+	deleteAssignment,
 	deleteClass,
 	deleteStudent,
 	deleteSubject,
@@ -26,7 +27,7 @@ const deleteActionMap = {
 	parent: deleteSubject,
 	lesson: deleteSubject,
 	exam: deleteSubject,
-	assignment: deleteSubject,
+	assignment: deleteAssignment,
 	result: deleteSubject,
 	attendance: deleteSubject,
 	event: deleteSubject,
