@@ -12,12 +12,7 @@ type CurrentState = {
 export const createAssignment = async (currentState: CurrentState, data: AssignmentSchema) => {
     try {
         await prisma.assignment.create({
-            data: {
-                title: data.title,
-                startDate: data.startDate,
-                dueDate: data.dueDate,
-                lessonId: data.lessonId,
-            }
+            data
         })
 
         return { success: true, error: false }
@@ -36,12 +31,7 @@ export const updateAssignment = async (currentState: CurrentState, data: Assignm
             where: {
                 id
             },
-            data: {
-                title: data.title,
-                startDate: data.startDate,
-                dueDate: data.dueDate,
-                lessonId: data.lessonId,
-            }
+            data
         })
 
         return { success: true, error: false }

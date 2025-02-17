@@ -10,69 +10,6 @@ import Image from "next/image";
 
 type ClassList = Class & { supervisor: Teacher; grade: Grade };
 
-// retreive the userId and role
-const { role } = await getUserData();
-
-const columns = [
-	{
-		header: "Class Name",
-		accessor: "name",
-	},
-	{
-		header: "Capacity",
-		accessor: "capacity",
-	},
-	{
-		header: "Grade",
-		accessor: "grade",
-	},
-	{
-		header: "Supervisor",
-		accessor: "supervisor",
-		className: "hidden md:table-cell",
-	},
-	...(role === "admin"
-		? [
-				{
-					header: "Actions",
-					accessor: "actions",
-				},
-		  ]
-		: []),
-];
-
-const renderRow = (item: ClassList) => (
-	<tr
-		key={item.id}
-		className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-purple-50"
-	>
-		<td className="flex items-center gap-4 p-4">{item.name}</td>
-		<td className="hidden md:table-cell">{item.capacity}</td>
-		<td className="hidden md:table-cell">{item.grade.level}</td>
-		<td className="hidden md:table-cell">
-			{item.supervisor.firstName + " " + item.supervisor.lastName}
-		</td>
-		<td>
-			<div className="flex items-center gap-2">
-				{role === "admin" && (
-					<>
-						<FormContainer
-							table="class"
-							type="update"
-							data={item}
-						/>
-						<FormContainer
-							table="class"
-							type="delete"
-							id={item.id}
-						/>
-					</>
-				)}
-			</div>
-		</td>
-	</tr>
-);
-
 const ClassListPage = async ({
 	searchParams,
 }: {
@@ -80,8 +17,76 @@ const ClassListPage = async ({
 		[key: string]: string | undefined;
 	};
 }) => {
-	const { page, ...queryParams } = searchParams;
-	const p = page ? parseInt(page) : 1;
+	// retreive the userId and role
+	const { role } = await getUserData();
+
+	const columns = [
+		{
+			header: "Class Name",
+			accessor: "name",
+		},
+		{
+			header: "Capacity",
+			accessor: "capacity",
+		},
+		{
+			header: "Grade",
+			accessor: "grade",
+		},
+		{
+			header: "Supervisor",
+			accessor: "supervisor",
+			className: "hidden md:table-cell",
+		},
+		...(role === "admin"
+			? [
+					{
+						header: "Actions",
+						accessor: "actions",
+					},
+			  ]
+			: []),
+	];
+
+	const renderRow = (item: ClassList) => (
+		<tr
+			key={item.id}
+			className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-purple-50"
+		>
+			<td className="flex items-center gap-4 p-4">{item.name}</td>
+			<td className="hidden md:table-cell">{item.capacity}</td>
+			<td className="hidden md:table-cell">{item.grade.level}</td>
+			<td className="hidden md:table-cell">
+				{item.supervisor.firstName + " " + item.supervisor.lastName}
+			</td>
+			<td>
+				<div className="flex items-center gap-2">
+					{role === "admin" && (
+						<>
+							<FormContainer
+								table="class"
+								type="update"
+								data={item}
+							/>
+							<FormContainer
+								table="class"
+								type="delete"
+								id={item.id}
+							/>
+						</>
+					)}
+				</div>
+			</td>
+		</tr>
+	);
+
+	// extract query parameters
+	const { page: rawPage, ...queryParams } = searchParams;
+
+	const parsedPage = rawPage ? parseInt(rawPage as string) : NaN;
+
+	// Check if the parsed page from search Params is valid Number greater then 0
+	const page = Number.isNaN(parsedPage) || parsedPage < 1 ? 1 : parsedPage;
 
 	const query: Prisma.ClassWhereInput = {};
 
@@ -113,7 +118,7 @@ const ClassListPage = async ({
 				},
 			},
 			take: ITEM_PER_PAGE,
-			skip: ITEM_PER_PAGE * (p - 1),
+			skip: ITEM_PER_PAGE * (page - 1),
 		}),
 		prisma.class.count({ where: query }),
 	]);
@@ -159,7 +164,7 @@ const ClassListPage = async ({
 			/>
 			{/* Pagination */}
 			<Pagination
-				page={p}
+				page={page}
 				count={count}
 			/>
 		</div>
