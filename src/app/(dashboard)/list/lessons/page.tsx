@@ -1,3 +1,4 @@
+import FormContainer from "@/components/FormContainer";
 import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
@@ -12,67 +13,6 @@ type LessonList = Lesson & { class: Class } & { teacher: Teacher } & {
 	subject: Subject;
 };
 
-// retreive the userId and role
-const { currentUserId, role } = await getUserData();
-
-const columns = [
-	{
-		header: "Subject Name",
-		accessor: "name",
-	},
-	{
-		header: "Class",
-		accessor: "class",
-	},
-	{
-		header: "Teacher",
-		accessor: "teacher",
-		className: "hidden md:table-cell",
-	},
-	...(role === "admin"
-		? [
-				{
-					header: "Actions",
-					accessor: "actions",
-				},
-		  ]
-		: []),
-];
-
-/////// Render Row Component ////////////
-const renderRow = (item: LessonList) => (
-	<tr
-		key={item.id}
-		className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-purple-50"
-	>
-		<td className="flex items-center gap-4 p-4 font-semibold">
-			{item.subject.name}
-		</td>
-		<td>{item.class.name}</td>
-		<td className="hidden md:table-cell">
-			{item.teacher.firstName + " " + item.teacher.lastName}
-		</td>
-		<td>
-			<div className="flex items-center gap-2">
-				{role === "admin" && (
-					<>
-						<FormModal
-							table="lesson"
-							type="update"
-							data={item}
-						/>
-						<FormModal
-							table="lesson"
-							type="delete"
-							id={item.id}
-						/>
-					</>
-				)}
-			</div>
-		</td>
-	</tr>
-);
-
 const LessonListPage = async ({
 	searchParams,
 }: {
@@ -80,8 +20,74 @@ const LessonListPage = async ({
 		[key: string]: string | undefined;
 	};
 }) => {
-	const { page, ...queryParams } = searchParams;
-	const p = page ? parseInt(page) : 1;
+	// retreive the userId and role
+	const { currentUserId, role } = await getUserData();
+
+	const columns = [
+		{
+			header: "Subject Name",
+			accessor: "name",
+		},
+		{
+			header: "Class",
+			accessor: "class",
+		},
+		{
+			header: "Teacher",
+			accessor: "teacher",
+			className: "hidden md:table-cell",
+		},
+		...(role === "admin"
+			? [
+					{
+						header: "Actions",
+						accessor: "actions",
+					},
+			  ]
+			: []),
+	];
+
+	/////// Render Row Component ////////////
+	const renderRow = (item: LessonList) => (
+		<tr
+			key={item.id}
+			className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-purple-50"
+		>
+			<td className="flex items-center gap-4 p-4 font-semibold">
+				{item.subject.name}
+			</td>
+			<td>{item.class.name}</td>
+			<td className="hidden md:table-cell">
+				{item.teacher.firstName + " " + item.teacher.lastName}
+			</td>
+			<td>
+				<div className="flex items-center gap-2">
+					{role === "admin" && (
+						<>
+							<FormContainer
+								table="lesson"
+								type="update"
+								data={item}
+							/>
+							<FormContainer
+								table="lesson"
+								type="delete"
+								id={item.id}
+							/>
+						</>
+					)}
+				</div>
+			</td>
+		</tr>
+	);
+
+	// extract query parameters
+	const { page: rawPage, ...queryParams } = searchParams;
+
+	const parsedPage = rawPage ? parseInt(rawPage as string) : NaN;
+
+	// Check if the parsed page from search Params is valid Number greater then 0
+	const page = Number.isNaN(parsedPage) || parsedPage < 1 ? 1 : parsedPage;
 
 	// URL Params Conditions //
 	const query: Prisma.LessonWhereInput = {};
@@ -94,7 +100,9 @@ const LessonListPage = async ({
 						query.OR = [
 							{ subject: { name: { contains: value, mode: "insensitive" } } },
 							{
-								teacher: { lastName: { contains: value, mode: "insensitive" } },
+								teacher: {
+									lastName: { contains: value, mode: "insensitive" },
+								},
 							},
 						];
 						break;
@@ -120,7 +128,7 @@ const LessonListPage = async ({
 				subject: { select: { name: true } },
 			},
 			take: ITEM_PER_PAGE,
-			skip: ITEM_PER_PAGE * (p - 1),
+			skip: ITEM_PER_PAGE * (page - 1),
 		}),
 		prisma.lesson.count({ where: query }),
 	]);
@@ -150,7 +158,7 @@ const LessonListPage = async ({
 							/>
 						</button>
 						{role === "admin" && (
-							<FormModal
+							<FormContainer
 								table="lesson"
 								type="create"
 							/>
@@ -166,7 +174,7 @@ const LessonListPage = async ({
 			/>
 			{/* Pagination */}
 			<Pagination
-				page={p}
+				page={page}
 				count={count}
 			/>
 		</div>

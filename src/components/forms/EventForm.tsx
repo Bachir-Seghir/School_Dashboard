@@ -22,7 +22,6 @@ const EventForm = ({
 	relatedData?: any;
 }) => {
 	const {
-		watch,
 		register,
 		handleSubmit,
 		formState: { errors },
