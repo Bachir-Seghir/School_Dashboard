@@ -1,4 +1,4 @@
-import FormModal from "@/components/FormModal";
+import FormContainer from "@/components/FormContainer";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
@@ -20,84 +20,6 @@ type ResultList = {
 	startTime: Date;
 };
 
-// retreive the userId and role
-const { currentUserId, role } = await getUserData();
-
-const columns = [
-	{
-		header: "Title",
-		accessor: "title",
-	},
-	{
-		header: "Student",
-		accessor: "studentId",
-	},
-	{
-		header: "Score",
-		accessor: "score",
-		className: "hidden md:table-cell",
-	},
-	{
-		header: "Teacher",
-		accessor: "teacher",
-		className: "hidden md:table-cell",
-	},
-	{
-		header: "Class",
-		accessor: "class",
-		className: "hidden md:table-cell",
-	},
-	{
-		header: "Date",
-		accessor: "date",
-		className: "hidden md:table-cell",
-	},
-	...(role === "admin" || role === "teacher"
-		? [
-				{
-					header: "Actions",
-					accessor: "actions",
-				},
-		  ]
-		: []),
-];
-
-/////// Render Row Component ////////////
-const renderRow = (item: ResultList) => (
-	<tr
-		key={item.id}
-		className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-purple-50"
-	>
-		<td className="flex items-center gap-4 p-4">{item.title}</td>
-		<td>{item.studentFName + " " + item.studentLName}</td>
-		<td className="hidden md:table-cell">{item.score}</td>
-		<td className="hidden md:table-cell">{item.teacherLName}</td>
-		<td className="hidden md:table-cell">{item.className}</td>
-		<td className="hidden md:table-cell">
-			{new Intl.DateTimeFormat("en-US").format(item.startTime)}
-		</td>
-		<td>
-			<div className="flex items-center gap-2">
-				{role === "admin" ||
-					(role === "teacher" && (
-						<>
-							<FormModal
-								table="result"
-								type="update"
-								data={item}
-							/>
-							<FormModal
-								table="result"
-								type="delete"
-								id={item.id}
-							/>
-						</>
-					))}
-			</div>
-		</td>
-	</tr>
-);
-
 const ResultListPage = async ({
 	searchParams,
 }: {
@@ -105,8 +27,90 @@ const ResultListPage = async ({
 		[key: string]: string | undefined;
 	};
 }) => {
-	const { page, ...queryParams } = searchParams;
-	const p = page ? parseInt(page) : 1;
+	// retreive the userId and role
+	const { currentUserId, role } = await getUserData();
+
+	const columns = [
+		{
+			header: "Title",
+			accessor: "title",
+		},
+		{
+			header: "Student",
+			accessor: "studentId",
+		},
+		{
+			header: "Score",
+			accessor: "score",
+			className: "hidden md:table-cell",
+		},
+		{
+			header: "Teacher",
+			accessor: "teacher",
+			className: "hidden md:table-cell",
+		},
+		{
+			header: "Class",
+			accessor: "class",
+			className: "hidden md:table-cell",
+		},
+		{
+			header: "Date",
+			accessor: "date",
+			className: "hidden md:table-cell",
+		},
+		...(role === "admin" || "teacher"
+			? [
+					{
+						header: "Actions",
+						accessor: "actions",
+					},
+			  ]
+			: []),
+	];
+
+	/////// Render Row Component ////////////
+	const renderRow = (item: ResultList) => (
+		<tr
+			key={item.id}
+			className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-purple-50"
+		>
+			<td className="flex items-center gap-4 p-4">{item.title}</td>
+			<td>{item.studentFName + " " + item.studentLName}</td>
+			<td className="hidden md:table-cell">{item.score}</td>
+			<td className="hidden md:table-cell">{item.teacherLName}</td>
+			<td className="hidden md:table-cell">{item.className}</td>
+			<td className="hidden md:table-cell">
+				{new Intl.DateTimeFormat("en-US").format(item.startTime)}
+			</td>
+			<td>
+				<div className="flex items-center gap-2">
+					{(role === "admin" || "teacher") && (
+						<>
+							<FormContainer
+								table="result"
+								type="update"
+								data={item}
+							/>
+							<FormContainer
+								table="result"
+								type="delete"
+								id={item.id}
+							/>
+						</>
+					)}
+				</div>
+			</td>
+		</tr>
+	);
+
+	// extract query parameters
+	const { page: rawPage, ...queryParams } = searchParams;
+
+	const parsedPage = rawPage ? parseInt(rawPage as string) : NaN;
+
+	// Check if the parsed page from search Params is valid Number greater then 0
+	const page = Number.isNaN(parsedPage) || parsedPage < 1 ? 1 : parsedPage;
 
 	const query: Prisma.ResultWhereInput = {};
 
@@ -187,7 +191,7 @@ const ResultListPage = async ({
 				},
 			},
 			take: ITEM_PER_PAGE,
-			skip: ITEM_PER_PAGE * (p - 1),
+			skip: ITEM_PER_PAGE * (page - 1),
 		}),
 		prisma.result.count({ where: query }),
 	]);
@@ -235,16 +239,12 @@ const ResultListPage = async ({
 								height={14}
 							/>
 						</button>
-						{role === "admin" ||
-							(role === "teacher" && (
-								// <button className="w-8 h-8 rounded-full flex items-center justify-center bg-yellow-200">
-								//   <Image src="/plus.png" alt="" width={14} height={14} />
-								// </button>
-								<FormModal
-									table="result"
-									type="create"
-								/>
-							))}
+						{(role === "admin" || "teacher") && (
+							<FormContainer
+								table="result"
+								type="create"
+							/>
+						)}
 					</div>
 				</div>
 			</div>
@@ -256,7 +256,7 @@ const ResultListPage = async ({
 			/>
 			{/* Pagination */}
 			<Pagination
-				page={p}
+				page={page}
 				count={count}
 			/>
 		</div>

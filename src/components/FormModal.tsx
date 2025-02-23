@@ -17,6 +17,7 @@ import {
 	deleteEvent,
 	deleteLesson,
 	deleteExam,
+	deleteResult,
 } from "@/lib/actions";
 
 import { FormContainerProps } from "./FormContainer";
@@ -31,7 +32,7 @@ const deleteActionMap = {
 	lesson: deleteLesson,
 	exam: deleteExam,
 	assignment: deleteAssignment,
-	result: deleteSubject,
+	result: deleteResult,
 	attendance: deleteSubject,
 	event: deleteEvent,
 	announcement: deleteAnnouncement,
