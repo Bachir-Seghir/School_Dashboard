@@ -52,7 +52,7 @@ const StudentForm = ({
 		}
 	}, [state, setOpen, type, router]);
 
-	const { grades, classes } = relatedData;
+	const { grades, classes, parents } = relatedData;
 
 	return (
 		<form
@@ -174,13 +174,6 @@ const StudentForm = ({
 					error={errors.birthday}
 					type="date"
 				/>
-				<InputField
-					label="Parent Id"
-					name="parentId"
-					defaultValue={data?.parentId}
-					register={register}
-					error={errors.parentId}
-				/>
 				{data && (
 					<InputField
 						label="Id"
@@ -226,6 +219,28 @@ const StudentForm = ({
 					{errors.gradeId?.message && (
 						<p className=" text-xs text-red-500">
 							{errors.gradeId.message.toString()}
+						</p>
+					)}
+				</div>
+				<div className="flex flex-col gap-2 w-full md:w-1/4">
+					<label className="text-xs text-gray-400">Parent</label>
+					<select
+						{...register("parentId")}
+						defaultValue={data?.parentId}
+						className="ring-[1.5px] ring-gray-300 p-2 rounded-md text-sm w-full"
+					>
+						{parents.map((parent: { id: number; lastName: string }) => (
+							<option
+								value={parent.id}
+								key={parent.id}
+							>
+								{parent.lastName}
+							</option>
+						))}
+					</select>
+					{errors.parentId?.message && (
+						<p className=" text-xs text-red-500">
+							{errors.parentId.message.toString()}
 						</p>
 					)}
 				</div>

@@ -1,5 +1,4 @@
 import FormContainer from "@/components/FormContainer";
-import FormModal from "@/components/FormModal";
 import Pagination from "@/components/Pagination";
 import Table from "@/components/Table";
 import TableSearch from "@/components/TableSearch";
@@ -21,7 +20,7 @@ const LessonListPage = async ({
 	};
 }) => {
 	// retreive the userId and role
-	const { currentUserId, role } = await getUserData();
+	const { role } = await getUserData();
 
 	const columns = [
 		{
