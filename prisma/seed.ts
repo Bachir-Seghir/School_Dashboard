@@ -1,4 +1,6 @@
-import { Day, PrismaClient, UserSex } from "@prisma/client";
+import { PrismaClient, $Enums } from "@prisma/client";
+const { Day, UserSex } = $Enums
+
 const prisma = new PrismaClient();
 
 async function main() {
