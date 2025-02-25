@@ -11,101 +11,6 @@ import Link from "next/link";
 
 type TeacherList = Teacher & { subjects: Subject[]; classes: Class[] };
 
-// retreive the userId and role
-const { currentUserId, role } = await getUserData();
-
-const columns = [
-	{
-		header: "Info",
-		accessor: "info",
-	},
-	{
-		header: "Teacher ID",
-		accessor: "teacherId",
-		className: "hidden md:table-cell",
-	},
-	{
-		header: "Subjects",
-		accessor: "subjects",
-		className: "hidden md:table-cell",
-	},
-	{
-		header: "Classes",
-		accessor: "classes",
-		className: "hidden md:table-cell",
-	},
-	{
-		header: "Phone",
-		accessor: "phone",
-		className: "hidden lg:table-cell",
-	},
-	{
-		header: "Address",
-		accessor: "address",
-		className: "hidden lg:table-cell",
-	},
-	...(role === "admin"
-		? [
-				{
-					header: "Actions",
-					accessor: "actions",
-				},
-		  ]
-		: []),
-];
-
-/////// Render Row Component ////////////
-const renderRow = (item: TeacherList) => (
-	<tr
-		key={item.id}
-		className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-purple-50"
-	>
-		<td className="flex items-center gap-4 p-4">
-			<Image
-				src={item.img || "/noAvatar.png"}
-				alt=""
-				width={40}
-				height={40}
-				className="md:hidden xl:block w-10 h-10 rounded-full object-cover"
-			/>
-			<div className="flex flex-col">
-				<h3 className="font-semibold">{item.lastName}</h3>
-				<p className="text-xs text-gray-500">{item?.email}</p>
-			</div>
-		</td>
-		<td className="hidden md:table-cell">{item.username}</td>
-		<td className="hidden md:table-cell">
-			{item.subjects.map((subject) => subject.name).join(",")}
-		</td>
-		<td className="hidden md:table-cell">
-			{item.classes.map((item) => item.name).join(",")}
-		</td>
-		<td className="hidden lg:table-cell">{item.phone}</td>
-		<td className="hidden lg:table-cell">{item.address}</td>
-		<td>
-			<div className="flex items-center gap-2">
-				<Link href={`/list/teachers/${item.id}`}>
-					<button className="h-7 w-7 rounded-full flex justify-center items-center bg-sky-200">
-						<Image
-							src="/view.png"
-							alt=""
-							width={16}
-							height={16}
-						/>
-					</button>
-				</Link>
-				{role === "admin" && (
-					<FormContainer
-						table="teacher"
-						type="delete"
-						id={item.id}
-					/>
-				)}
-			</div>
-		</td>
-	</tr>
-);
-
 const TeacherListPage = async ({
 	searchParams,
 }: {
@@ -113,8 +18,108 @@ const TeacherListPage = async ({
 		[key: string]: string | undefined;
 	};
 }) => {
-	const { page, ...queryParams } = searchParams;
-	const p = page ? parseInt(page) : 1;
+	// retreive the userId and role
+	const { role } = await getUserData();
+
+	const columns = [
+		{
+			header: "Info",
+			accessor: "info",
+		},
+		{
+			header: "Teacher ID",
+			accessor: "teacherId",
+			className: "hidden md:table-cell",
+		},
+		{
+			header: "Subjects",
+			accessor: "subjects",
+			className: "hidden md:table-cell",
+		},
+		{
+			header: "Classes",
+			accessor: "classes",
+			className: "hidden md:table-cell",
+		},
+		{
+			header: "Phone",
+			accessor: "phone",
+			className: "hidden lg:table-cell",
+		},
+		{
+			header: "Address",
+			accessor: "address",
+			className: "hidden lg:table-cell",
+		},
+		...(role === "admin"
+			? [
+					{
+						header: "Actions",
+						accessor: "actions",
+					},
+			  ]
+			: []),
+	];
+
+	/////// Render Row Component ////////////
+	const renderRow = (item: TeacherList) => (
+		<tr
+			key={item.id}
+			className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-purple-50"
+		>
+			<td className="flex items-center gap-4 p-4">
+				<Image
+					src={item.img || "/noAvatar.png"}
+					alt=""
+					width={40}
+					height={40}
+					className="md:hidden xl:block w-10 h-10 rounded-full object-cover"
+				/>
+				<div className="flex flex-col">
+					<h3 className="font-semibold">{item.lastName}</h3>
+					<p className="text-xs text-gray-500">{item?.email}</p>
+				</div>
+			</td>
+			<td className="hidden md:table-cell">{item.username}</td>
+			<td className="hidden md:table-cell">
+				{item.subjects.map((subject) => subject.name).join(",")}
+			</td>
+			<td className="hidden md:table-cell">
+				{item.classes.map((item) => item.name).join(",")}
+			</td>
+			<td className="hidden lg:table-cell">{item.phone}</td>
+			<td className="hidden lg:table-cell">{item.address}</td>
+			<td>
+				<div className="flex items-center gap-2">
+					<Link href={`/list/teachers/${item.id}`}>
+						<button className="h-7 w-7 rounded-full flex justify-center items-center bg-sky-200">
+							<Image
+								src="/view.png"
+								alt=""
+								width={16}
+								height={16}
+							/>
+						</button>
+					</Link>
+					{role === "admin" && (
+						<FormContainer
+							table="teacher"
+							type="delete"
+							id={item.id}
+						/>
+					)}
+				</div>
+			</td>
+		</tr>
+	);
+
+	// extract query parameters
+	const { page: rawPage, ...queryParams } = searchParams;
+
+	const parsedPage = rawPage ? parseInt(rawPage as string) : NaN;
+
+	// Check if the parsed page from search Params is valid Number greater then 0
+	const page = Number.isNaN(parsedPage) || parsedPage < 1 ? 1 : parsedPage;
 
 	const query: Prisma.TeacherWhereInput = {};
 
@@ -145,7 +150,7 @@ const TeacherListPage = async ({
 				classes: true,
 			},
 			take: ITEM_PER_PAGE,
-			skip: ITEM_PER_PAGE * (p - 1),
+			skip: ITEM_PER_PAGE * (page - 1),
 		}),
 		prisma.teacher.count({ where: query }),
 	]);
@@ -190,7 +195,7 @@ const TeacherListPage = async ({
 			/>
 			{/* Pagination */}
 			<Pagination
-				page={p}
+				page={page}
 				count={count}
 			/>
 		</div>

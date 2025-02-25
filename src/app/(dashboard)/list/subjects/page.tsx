@@ -11,55 +11,6 @@ import Image from "next/image";
 
 type SubjectList = Subject & { teachers: Teacher[] };
 
-// retreive the userId and role
-const { currentUserId, role } = await getUserData();
-
-const renderRow = (item: SubjectList) => (
-	<tr
-		key={item.id}
-		className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-purple-50"
-	>
-		<td className="flex items-center gap-4 p-4 font-semibold">{item.name}</td>
-		<td className="hidden md:table-cell">
-			{item.teachers.map((teacher) => teacher.firstName).join(",")}
-		</td>
-		<td>
-			<div className="flex items-center gap-2">
-				{role === "admin" && (
-					<>
-						<FormContainer
-							table="subject"
-							type="update"
-							data={item}
-						/>
-						<FormContainer
-							table="subject"
-							type="delete"
-							id={item.id}
-						/>
-					</>
-				)}
-			</div>
-		</td>
-	</tr>
-);
-
-const columns = [
-	{
-		header: "Subject Name",
-		accessor: "name",
-	},
-	{
-		header: "Teachers",
-		accessor: "teachers",
-		className: "hidden md:table-cell",
-	},
-	{
-		header: "Actions",
-		accessor: "actions",
-	},
-];
-
 const SubjectListPage = async ({
 	searchParams,
 }: {
@@ -67,8 +18,62 @@ const SubjectListPage = async ({
 		[key: string]: string | undefined;
 	};
 }) => {
-	const { page, ...queryParams } = searchParams;
-	const p = page ? parseInt(page) : 1;
+	// retreive the userId and role
+	const { role } = await getUserData();
+
+	const renderRow = (item: SubjectList) => (
+		<tr
+			key={item.id}
+			className="border-b border-gray-200 even:bg-slate-50 text-sm hover:bg-purple-50"
+		>
+			<td className="flex items-center gap-4 p-4 font-semibold">{item.name}</td>
+			<td className="hidden md:table-cell">
+				{item.teachers.map((teacher) => teacher.firstName).join(",")}
+			</td>
+			<td>
+				<div className="flex items-center gap-2">
+					{role === "admin" && (
+						<>
+							<FormContainer
+								table="subject"
+								type="update"
+								data={item}
+							/>
+							<FormContainer
+								table="subject"
+								type="delete"
+								id={item.id}
+							/>
+						</>
+					)}
+				</div>
+			</td>
+		</tr>
+	);
+
+	const columns = [
+		{
+			header: "Subject Name",
+			accessor: "name",
+		},
+		{
+			header: "Teachers",
+			accessor: "teachers",
+			className: "hidden md:table-cell",
+		},
+		{
+			header: "Actions",
+			accessor: "actions",
+		},
+	];
+
+	// extract query parameters
+	const { page: rawPage, ...queryParams } = searchParams;
+
+	const parsedPage = rawPage ? parseInt(rawPage as string) : NaN;
+
+	// Check if the parsed page from search Params is valid Number greater then 0
+	const page = Number.isNaN(parsedPage) || parsedPage < 1 ? 1 : parsedPage;
 
 	const query: Prisma.SubjectWhereInput = {};
 
@@ -91,7 +96,7 @@ const SubjectListPage = async ({
 				teachers: true,
 			},
 			take: ITEM_PER_PAGE,
-			skip: ITEM_PER_PAGE * (p - 1),
+			skip: ITEM_PER_PAGE * (page - 1),
 		}),
 		prisma.subject.count({ where: query }),
 	]);
@@ -137,7 +142,7 @@ const SubjectListPage = async ({
 			/>
 			{/* Pagination */}
 			<Pagination
-				page={p}
+				page={page}
 				count={count}
 			/>
 		</div>
