@@ -8,6 +8,7 @@ RUN npm install --frozen-lockfile
 
 # Copy app files & build
 COPY . .
+RUN npx prisma generate
 RUN npm run build
 
 # Step 2: Create a minimal runtime image
@@ -19,6 +20,7 @@ COPY --from=builder /app/package.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/prisma ./prisma
 
 # Set environment variables
 ENV NODE_ENV=production
