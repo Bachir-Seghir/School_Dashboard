@@ -180,12 +180,15 @@ async function main() {
 
     // EVENT
     for (let i = 1; i <= 5; i++) {
+        const startTime = new Date(new Date().setHours(new Date().getHours() + 1))
+        const endTime = new Date(startTime)
+        endTime.setHours(startTime.getHours() + 1)
         await prisma.event.create({
             data: {
                 title: `Event ${i}`,
                 description: `Description for Event ${i}`,
-                startTime: new Date(new Date().setHours(new Date().getHours() + 1)),
-                endTime: new Date(new Date().setHours(new Date().getHours() + 2)),
+                startTime,
+                endTime: endTime.toISOString().split("T")[1].slice(0, 5),
                 classId: (i % 5) + 1,
             },
         });
