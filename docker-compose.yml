@@ -6,11 +6,11 @@ services:
     container_name: school_db
     restart: always
     env_file:
-      - .env
+      - .env.production
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgres/data
+      - postgres_data:/var/lib/postgresql/data
     
   app:
     build: .
@@ -19,10 +19,11 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     env_file:
-      - .env
-    entrypoint: ["sh", "-c", "npx prisma migrate deploy && npm run start"]
+      - .env.production
+    entrypoint: ["sh", "-c", "npx prisma migrate deploy && npm start"]
 
 volumes:
   postgres_data:
