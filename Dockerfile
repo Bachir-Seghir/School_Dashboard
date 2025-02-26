@@ -1,6 +1,5 @@
 # Use Node.js image
-FROM node:18-alpine
-
+FROM --platform=linux/amd64 node:20.1.0-alpine AS base
 # Set working directory inside container
 WORKDIR /app
 
@@ -10,6 +9,7 @@ RUN npm install
 
 # Copy the rest of the project
 COPY . .
+RUN npx prisma generate
 
 # Expose the Next.js dev server port
 EXPOSE 3000
