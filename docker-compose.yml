@@ -13,11 +13,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD", "pg_isready -U bachir -d master_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
   app:
     build: .
@@ -26,8 +21,7 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      postgres:
-        condition: service_healthy
+      - postgres
     volumes:
       - .:/app
       - /app/node_modules
